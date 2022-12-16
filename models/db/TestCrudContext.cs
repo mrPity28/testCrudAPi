@@ -30,6 +30,7 @@ public partial class TestCrudContext : DbContext
 
     // stores procedure 
     public virtual DbSet<SpObtenerPeliculasConStockVentaAlquiler> SpObtenerPeliculasConStockVentaAlquilers {get;set;}
+    public virtual DbSet<SpCrud> SpCrud {get;set;}
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -183,6 +184,7 @@ public partial class TestCrudContext : DbContext
         });
 
         modelBuilder.Entity<SpObtenerPeliculasConStockVentaAlquiler>().HasNoKey();
+        modelBuilder.Entity<SpCrud>().HasNoKey();
         OnModelCreatingPartial(modelBuilder);
     }
 

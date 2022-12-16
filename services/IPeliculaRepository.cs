@@ -9,5 +9,9 @@ namespace TestCrud.services
     {
         IEnumerable<SpObtenerPeliculasConStockVentaAlquiler> GetPeliculasConStockDeVenta();
         IEnumerable<SpObtenerPeliculasConStockVentaAlquiler> GetPeliculasConStockDeAlquiler();
+        SpCrud GuardarPelicula(string descripcion, int stockAlquiler, int stockVenta, double precioAlquiler, double precioVenta);
+        SpCrud ModificarPelicula(int cod_pelicula, string descripcion, int stockAlquiler, int stockVenta, double precioAlquiler, double precioVenta);
+        SpCrud BorrarPelicula(int cod_pelicula);
+        SpCrud AsignarGeneroAPelicula(int codPelicula, int codGenero);
     }
 }

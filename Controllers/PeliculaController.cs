@@ -21,6 +21,131 @@ namespace TestCrud.Controllers
             _peliculaRepo = peliculaRepo;
         }
 
+        [HttpPost]
+        public IActionResult GuardarPelicula([FromBody] BodyPeliculaDto value)
+        {
+            try
+            {
+                var res = _peliculaRepo.GuardarPelicula(value.TxtDesc,value.CantDisponiblesAlquiler,value.CantDisponiblesVenta,value.PrecioAlquiler,value.PrecioVenta);
+                
+                if(res.NroError == 0)
+                    return Ok(new Response(){
+                        Message = res.MessageError,
+                        Success = true
+                    });
+                else 
+                    return BadRequest(
+                        new Response(){
+                           Message = res.MessageError,
+                            Success = true
+                        }
+                    );
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                  new Response(){
+                    Message = "no se pudo guardar la pelicula",
+                    Success = false
+                  }  
+                );
+            }
+        }
+        
+        [HttpPut]
+        public IActionResult ModificarPelicula([FromBody] BodyPeliculaDto value)
+        {
+            try
+            {
+                var res = _peliculaRepo.ModificarPelicula(value.CodPelicula,value.TxtDesc,value.CantDisponiblesAlquiler,value.CantDisponiblesVenta,value.PrecioAlquiler,value.PrecioVenta);
+                
+                if(res.NroError == 0)
+                    return Ok(new Response(){
+                        Message = res.MessageError,
+                        Success = true
+                    });
+                else 
+                    return BadRequest(
+                        new Response(){
+                           Message = res.MessageError,
+                            Success = true
+                        }
+                    );
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                  new Response(){
+                    Message = "no se pudo guardar la pelicula",
+                    Success = false
+                  }  
+                );
+            }
+        }
+        
+        [HttpDelete]
+        public IActionResult BorrarPelicula([FromBody] int cod_pelicula)
+        {
+            try
+            {
+                var res = _peliculaRepo.BorrarPelicula(cod_pelicula);
+                
+                if(res.NroError == 0)
+                    return Ok(new Response(){
+                        Message = res.MessageError,
+                        Success = true
+                    });
+                else 
+                    return BadRequest(
+                        new Response(){
+                           Message = res.MessageError,
+                            Success = true
+                        }
+                    );
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                  new Response(){
+                    Message = "no se pudo guardar la pelicula",
+                    Success = false
+                  }  
+                );
+            }
+        }
+        
+
+        [HttpPost("genero/asignar")]
+        public IActionResult AsignarGeneroAPelicula([FromBody] BodyPeliculaGeneroDto value)
+        {
+            try
+            {
+                var res = _peliculaRepo.AsignarGeneroAPelicula(value.CodPelicula,value.CodGenero);
+                
+                if(res.NroError == 0)
+                    return Ok(new Response(){
+                        Message = res.MessageError,
+                        Success = true
+                    });
+                else 
+                    return BadRequest(
+                        new Response(){
+                           Message = res.MessageError,
+                            Success = true
+                        }
+                    );
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                  new Response(){
+                    Message = "no se pudo guardar la pelicula",
+                    Success = false
+                  }  
+                );
+            }
+        }
+
 
         [HttpGet("stock/venta")]
         public IActionResult GetPeliculasStockVenta()
