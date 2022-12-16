@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using TestCrud.models.db.TestCrud;
-
+using TestCrud.models.db.TestCrud.StoreProcedure;
 namespace TestCrud.models.db;
 
 public partial class TestCrudContext : DbContext
@@ -27,6 +27,9 @@ public partial class TestCrudContext : DbContext
     public virtual DbSet<TUser> TUsers { get; set; }
 
     public virtual DbSet<TVentaPelicula> TVentaPeliculas { get; set; }
+
+    // stores procedure 
+    public virtual DbSet<SpObtenerPeliculasConStockVentaAlquiler> SpObtenerPeliculasConStockVentaAlquilers {get;set;}
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -179,6 +182,7 @@ public partial class TestCrudContext : DbContext
                 .HasConstraintName("FK__tVentaPel__cod_u__35BCFE0A");
         });
 
+        modelBuilder.Entity<SpObtenerPeliculasConStockVentaAlquiler>().HasNoKey();
         OnModelCreatingPartial(modelBuilder);
     }
 

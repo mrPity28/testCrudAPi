@@ -1,32 +1,85 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using TestCrud.dto;
+using TestCrud.services;
 
 namespace TestCrud.Controllers
 {
-    [Route("[controller]")]
-    public class PeliculaController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class PeliculaController : ControllerBase
     {
         private readonly ILogger<PeliculaController> _logger;
+        private IPeliculaRepository _peliculaRepo;
 
-        public PeliculaController(ILogger<PeliculaController> logger)
+        public PeliculaController(ILogger<PeliculaController> logger, IPeliculaRepository peliculaRepo )
         {
             _logger = logger;
+            _peliculaRepo = peliculaRepo;
         }
 
-        public IActionResult Index()
+
+        [HttpGet("stock/venta")]
+        public IActionResult GetPeliculasStockVenta()
         {
-            return View();
+            try
+            {
+                var peliculas = _peliculaRepo.GetPeliculasConStockDeVenta();
+
+                if(peliculas.Count() > 0)
+                    return Ok(
+                        new Response(){
+                            Data = peliculas,
+                            Message = "",
+                            Success = true      
+                        }
+                    );
+                else 
+                    return NoContent();
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                    new Response(){
+                            Data = null,
+                            Message = "",
+                            Success = false      
+                        }
+                );
+            }
+        }
+        [HttpGet("stock/alquiler")]
+        public IActionResult GetPeliculasStockAlquilerC()
+        {
+            try
+            {
+                var peliculas = _peliculaRepo.GetPeliculasConStockDeAlquiler();
+
+                if(peliculas.Count() > 0)
+                    return Ok(
+                        new Response(){
+                            Data = peliculas,
+                            Message = "",
+                            Success = true      
+                        }
+                    );
+                else 
+                    return NoContent();
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                    new Response(){
+                            Data = null,
+                            Message = "",
+                            Success = false      
+                        }
+                );
+            }
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View("Error!");
-        }
     }
 }
