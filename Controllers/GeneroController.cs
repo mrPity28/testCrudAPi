@@ -15,7 +15,6 @@ namespace TestCrud.Controllers
         private readonly ILogger<PeliculaController> _logger;
         private IGeneroRepository _generoRepo;
 
-
         public GeneroController(ILogger<PeliculaController> logger, IGeneroRepository generoRepo)
         {
             _logger = logger;
