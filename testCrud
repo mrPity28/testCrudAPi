@@ -1,0 +1,491 @@
+drop database TestCrud
+Create DATABASE TestCrud
+
+use TestCrud
+GO 
+CREATE TABLE tRol
+(
+cod_rol INT IDENTITY PRIMARY KEY
+, txt_desc VARCHAR(500)
+, sn_activo INT
+)
+GO
+INSERT INTO trol VALUES ( 'Administrador',-1)
+INSERT INTO trol VALUES ( 'Cliente', -1)
+GO
+CREATE TABLE tUsers
+(cod_usuario INT PRIMARY KEY IDENTITY, txt_user VARCHAR(50), txt_password
+VARCHAR(50),txt_nombre VARCHAR(200), txt_apellido VARCHAR(200), nro_doc
+VARCHAR(50), cod_rol INT, sn_activo INT
+, CONSTRAINT fk_user_rol FOREIGN KEY (cod_rol) REFERENCES tRol(cod_rol)
+)
+GO
+INSERT INTO tUsers VALUES ( 'Admin', 'PassAdmin123', 'Administrador', 'Test', '1234321', 1,-1)
+INSERT INTO tUsers VALUES ('userTest', 'Test1', 'Ariel', 'ApellidoConA', '12312321', 1, -1)
+INSERT INTO tUsers VALUES ('userTest2', 'Test2', 'Bernardo', 'ApellidoConB', '12312322', 1, -1)
+INSERT INTO tUsers VALUES ('userTest3', 'Test3', 'Carlos', 'ApellidoConC', '12312323', 1, -1)
+GO
+CREATE TABLE tPelicula (cod_pelicula INT PRIMARY KEY IDENTITY, txt_desc
+VARCHAR(500), cant_disponibles_alquiler INT, cant_disponibles_venta INT,
+precio_alquiler NUMERIC(18,2), precio_venta NUMERIC(18,2))
+GO
+INSERT INTO tPelicula VALUES ('Duro de matar III', 3, 0,1.5,5.0)
+INSERT INTO tPelicula VALUES ('Todo Poderoso', 2,1,1.5,7.0)
+INSERT INTO tPelicula VALUES ('Stranger than fiction', 1,1,1.5,8.0)
+INSERT INTO tPelicula VALUES ('OUIJA', 0,2,2.0,20.50)
+GO
+CREATE TABLE tGenero (cod_genero INT PRIMARY KEY IDENTITY, txt_desc
+VARCHAR(500) )
+INSERT INTO tGenero VALUES('Acción')
+INSERT INTO tGenero VALUES('Comedia')
+INSERT INTO tGenero VALUES('Drama')
+INSERT INTO tGenero VALUES('Terror')
+GO
+CREATE TABLE tGeneroPelicula (cod_pelicula INT, cod_genero INT
+, PRIMARY KEY(cod_pelicula, cod_genero)
+, CONSTRAINT fk_genero_pelicula FOREIGN KEY(cod_pelicula) REFERENCES
+tpelicula(cod_pelicula)
+, CONSTRAINT fk_pelicula_genero FOREIGN KEY(cod_genero) REFERENCES
+tGenero(cod_genero))
+GO
+INSERT INTO tGeneroPelicula VALUES(1,1)
+INSERT INTO tGeneroPelicula VALUES(2,2)
+INSERT INTO tGeneroPelicula VALUES(3,2)
+INSERT INTO tGeneroPelicula VALUES(3,3)
+INSERT INTO tGeneroPelicula VALUES(4,4)
+GO
+
+-- tablas de ventas y alquiler 
+
+CREATE TABLE tAlquilerPelicula (
+    Id int Not Null PRIMARY KEY IDENTITY,
+    cod_pelicula int FOREIGN KEY REFERENCES tpelicula(cod_pelicula),
+    cod_usuario int FOREIGN KEY REFERENCES tUsers(cod_usuario),
+    precio_alquiler FLOAT not null,
+    devuelto bit not NULL,
+    Fecha_Alquiler DATETIME not null,
+    Fecha_Devolucion DATETIME not null,
+);
+
+CREATE TABLE tVentaPelicula (
+    Id int Not Null PRIMARY KEY IDENTITY,
+    cod_pelicula int FOREIGN KEY REFERENCES tpelicula(cod_pelicula),
+    cod_usuario int FOREIGN KEY REFERENCES tUsers(cod_usuario),
+    precio_venta FLOAT not null,
+    FechaDeVenta DATETIME not null,
+);
+
+
+-- sp insertar usuario 
+USE TestCrud;  
+GO  
+Create PROCEDURE dbo.CrearUsuario   
+    @user nvarchar(50),   
+    @password nvarchar(50),
+    @nombre nvarchar(50),
+    @apellido nvarchar(50),
+    @nro_doc nvarchar(50),
+    @cod_rol integer = 2,
+    @sn_activo bit = 1   
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+            IF (SELECT COUNT(cod_usuario) FROM [TestCrud].[dbo].[tUsers] WITH (NOLOCK)  WHERE nro_doc = @nro_doc)<> 0
+            BEGIN
+                RAISERROR ('Ya existe un usuario con el numero de docuento especificado',16,1);
+            END
+                insert into tUsers
+                    (txt_user,txt_password,txt_nombre,txt_apellido,nro_doc,cod_rol,sn_activo)
+                VALUES
+                    (@user,@password,@nombre,@apellido,@nro_doc,@cod_rol,@sn_activo)
+                
+                SELECT 0 NroError,'Usuario Insertado' MessageError	
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+-- sp crear pelicula
+Create PROCEDURE dbo.SpCrearPelicula   
+    @descripcion nvarchar(50),   
+    @stock_alquiler integer = 0,
+    @stock_venta integer = 0,
+    @precio_alquiler float = 0,
+    @precio_venta float = 0
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+            IF (SELECT COUNT(cod_pelicula) FROM [TestCrud].[dbo].[tPelicula] WITH (NOLOCK)  WHERE txt_desc = @descripcion)<> 0
+            BEGIN
+                RAISERROR ('ya existe la pelicula',16,1);
+            END
+                insert into tPelicula
+                    (txt_desc,cant_disponibles_alquiler,cant_disponibles_venta,precio_alquiler,precio_venta)
+                VALUES
+                    (@descripcion,@stock_alquiler,@stock_venta,@precio_alquiler,@precio_venta)
+                
+                SELECT 0 NroError,'Pelicula Insertada' MessageError	
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+
+-- modificar pelicula
+Create PROCEDURE dbo.SpModificarPelicula 
+    @cod_pelicula INTEGER,
+    @descripcion nvarchar(50),   
+    @stock_alquiler integer,
+    @stock_venta integer,
+    @precio_alquiler float,
+    @precio_venta float
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+            IF (SELECT COUNT(cod_pelicula) FROM [TestCrud].[dbo].[tPelicula] WITH (NOLOCK)  WHERE cod_pelicula = @cod_pelicula)= 0
+            BEGIN
+                RAISERROR ('No existe la pelicula',16,1);
+            END
+               
+                UPDATE tPelicula 
+                SET 
+                    txt_desc = @descripcion ,cant_disponibles_alquiler = @stock_alquiler , cant_disponibles_venta = @stock_venta,
+                    precio_alquiler = @precio_alquiler , precio_venta = @precio_venta
+                where cod_pelicula = @cod_pelicula
+                
+                SELECT 0 NroError,'Pelicula Modificada' MessageError	
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+
+-- sp borrar pelicula
+Create PROCEDURE dbo.SpBorrarPelicula 
+    @cod_pelicula INTEGER
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+            IF (SELECT COUNT(cod_pelicula) FROM [TestCrud].[dbo].[tPelicula] WITH (NOLOCK)  WHERE cod_pelicula = @cod_pelicula)= 0
+            BEGIN
+                RAISERROR ('No existe la pelicula',16,1);
+            END
+               
+                UPDATE tPelicula 
+                SET cant_disponibles_alquiler = 0 , cant_disponibles_venta = 0
+                where cod_pelicula = @cod_pelicula
+                
+                SELECT 0 NroError,'Pelicula Borrada' MessageError	
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+
+-- sp crear genero
+Create PROCEDURE dbo.SpCrearGenero
+    @descripcion nvarchar(50)
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+            IF (SELECT COUNT(cod_genero) FROM [TestCrud].[dbo].[tGenero] WITH (NOLOCK)  WHERE  txt_desc = @descripcion)<> 0
+            BEGIN
+                RAISERROR ('ya existe el genero',16,1);
+            END
+                insert into tGenero
+                    (txt_desc)
+                VALUES
+                    (@descripcion)
+                
+                SELECT 0 NroError,'genero Insertado' MessageError	
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+
+-- sp crear asignar genero a pelicula
+Create PROCEDURE dbo.SpAsignarGeneroAPelicula
+    @cod_pelicula integer,
+    @cod_genero INTEGER
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+            IF (SELECT COUNT(cod_pelicula) FROM [TestCrud].[dbo].[tGeneroPelicula] WITH (NOLOCK)  WHERE  cod_pelicula = @cod_pelicula) <> 0
+            BEGIN
+                RAISERROR ('La pelicula ya tiene un genero asignado',16,1);
+            END
+                insert into tGeneroPelicula
+                    (cod_pelicula,cod_genero)
+                VALUES
+                    (@cod_pelicula,@cod_genero)
+                
+                SELECT 0 NroError,'Genero asignado a pelicula' MessageError	
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+
+-- sp buscar peliculas con stock positivo para venta
+Create PROCEDURE dbo.SpObtenerPeliculasConStockVenta
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+
+            select * 
+            from tPelicula WITH (NOLOCK)
+            where cant_disponibles_venta > 0
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+-- sp buscar peliculas con stock positivo en alquiler
+Create PROCEDURE dbo.SpObtenerPeliculasConStockAlquiler
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+
+            select * 
+            from tPelicula WITH (NOLOCK)
+            where cant_disponibles_alquiler > 0
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+
+-- alquilar pelicula 
+
+Create PROCEDURE [dbo].[AlquilarPelicula]   
+    @cod_pelicula INTEGER,
+    @cod_usuario INTEGER,
+    @precio float
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+            IF (SELECT COUNT(cod_pelicula) FROM [TestCrud].[dbo].[tPelicula] WITH (NOLOCK)  WHERE cod_pelicula = @cod_pelicula and cant_disponibles_alquiler > 0)< 1
+            BEGIN
+                RAISERROR ('la pelicula no tiene stock para alquilar',16,1);
+            END
+                insert into tAlquilerPelicula
+                    (cod_pelicula,cod_usuario, precio_alquiler, devuelto, Fecha_Alquiler, Fecha_Devolucion)
+                VALUES
+                    (@cod_pelicula,@cod_usuario,@precio,0,GETDATE(),GETDATE())
+                
+                UPDATE tPelicula set cant_disponibles_alquiler = cant_disponibles_alquiler - 1 where cod_pelicula = @cod_pelicula
+
+                SELECT 0 NroError,'Pelicula Alquilada' MessageError	
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO
+
+-- sp venta pelicula
+
+create  PROCEDURE [dbo].[SpVenderPelicula]   
+    @cod_pelicula INTEGER,
+    @cod_usuario INTEGER,
+    @precio float
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+            IF (SELECT COUNT(cod_pelicula) FROM [TestCrud].[dbo].[tPelicula] WITH (NOLOCK)  WHERE cod_pelicula = @cod_pelicula and cant_disponibles_venta > 0)< 1
+            BEGIN
+                RAISERROR ('la pelicula no tiene stock para venta',16,1);
+            END
+                insert into tVentaPelicula
+                    (cod_pelicula,cod_usuario, precio_venta, FechaDeVenta)
+                VALUES
+                    (@cod_pelicula,@cod_usuario,@precio,GETDATE())
+                
+                UPDATE tPelicula set cant_disponibles_venta = cant_disponibles_venta - 1 where cod_pelicula = @cod_pelicula
+
+                SELECT 0 NroError,'Pelicula vendida' MessageError	
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO
+
+
+-- devolver pelicula alquilada
+
+create PROCEDURE dbo.SpDevolverPelicula
+    @cod_alquiler_pelicula INTEGER
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+
+            declare @cod_pelicula as integer;
+            SET @cod_pelicula = 0;
+
+            SELECT @cod_pelicula = cod_pelicula  from tAlquilerPelicula where Id = @cod_alquiler_pelicula and devuelto = 0
+
+             IF @cod_pelicula <> 0
+            BEGIN
+                UPDATE tAlquilerPelicula set devuelto = 1 WHERE Id = @cod_alquiler_pelicula
+                update tPelicula set cant_disponibles_alquiler = cant_disponibles_alquiler + 1 where cod_pelicula = @cod_pelicula  
+                SELECT 0 NroError,'Pelicula alquilada devuelta' MessageError	
+            END
+            else 
+                SELECT 0 NroError,'No se encontro la pelicula para devolver' MessageError	
+                
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+
+-- peliculas alquiladas por devolver 
+create PROCEDURE dbo.SpPeliculasAlquiladas
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+
+            select a.Id, p.txt_desc pelicula,u.txt_nombre + ' ' + u.txt_apellido usuario, a.Fecha_Alquiler fecha from tAlquilerPelicula a
+            inner join tPelicula p on p.cod_pelicula = a.cod_pelicula
+            inner join tUsers u on u.cod_usuario = a.cod_usuario
+            where devuelto = 0    
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+
+-- buscar alquiler por usuario
+
+create PROCEDURE dbo.SpBuscarPeliculaAlquiladaPorUsuario
+ @cod_usuario integer = 0
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+
+            select a.Id ,p.txt_desc pelicula,u.txt_nombre + ' ' + u.txt_apellido usuario, a.precio_alquiler ,a.Fecha_Alquiler fecha 
+            from tAlquilerPelicula a
+            inner join tPelicula p on p.cod_pelicula = a.cod_pelicula
+            inner join tUsers u on u.cod_usuario = a.cod_usuario
+            where  (a.cod_usuario = @cod_usuario or @cod_usuario = 0)    
+            order by usuario ASC
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+
+-- sp que retorna lo recaudado por cada pelicula
+
+create PROCEDURE dbo.SpRecaudadoPorPelicula
+AS   
+BEGIN
+
+BEGIN TRY
+		BEGIN TRANSACTION	
+
+           
+        select Pelicula, sum(cantAlquilada) cantAlquilada, sum(cantVendida) cantVendida, sum(precio_alquiler) precio_alquiler, sum(precio_venta) precio_venta
+        FROM(
+            select p.txt_desc Pelicula, count(a.cod_pelicula) cantAlquilada,0 cantVendida , sum(a.precio_alquiler) precio_alquiler, 0 precio_venta 
+            from tAlquilerPelicula a
+            RIGHT join tPelicula p on p.cod_pelicula = a.cod_pelicula
+            group by p.txt_desc
+
+            union
+
+            select p.txt_desc Pelicula,0 cantAlquilada,count(v.cod_pelicula) cantVendida, 0 precioalquiler, sum(v.precio_venta ) precio_venta
+            from tVentaPelicula v 
+            RIGHT join tPelicula p on p.cod_pelicula = v.cod_pelicula
+            group by p.txt_desc
+        )T
+        group by Pelicula
+
+
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		ROLLBACK TRANSACTION
+            SELECT ERROR_NUMBER() NroError, FORMATMESSAGE(ERROR_MESSAGE()) MessageError	
+    END CATCH
+END 
+GO  
+
