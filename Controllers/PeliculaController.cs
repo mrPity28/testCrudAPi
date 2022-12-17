@@ -21,6 +21,66 @@ namespace TestCrud.Controllers
             _peliculaRepo = peliculaRepo;
         }
 
+        [HttpGet]
+        public IActionResult GetPeliculas()
+        {
+            try
+            {
+                var peliculas = _peliculaRepo.GetPeliculas();
+
+                if(peliculas.Count() > 0)
+                    return Ok(
+                        new Response(){
+                            Success = true,
+                            Data = peliculas,
+                            Message = "listado de peliculas"
+                        }
+                    );
+                else 
+                    return NoContent();
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                  new Response(){
+                    Message = "Error interno en el servidor",
+                    Success = false
+                  }  
+                );
+            }
+        }
+
+        [HttpGet("{cod_pelicula}")]
+        public IActionResult GetPeliculasID(int cod_pelicula)
+        {
+            try
+            {
+                var pelicula = _peliculaRepo.GetPelicula(cod_pelicula);
+
+                if(pelicula !=  null)
+                    return Ok(
+                        new Response(){
+                            Success = true,
+                            Data = pelicula,
+                            Message = "pelicula"
+                        }
+                    );
+                else 
+                    return NoContent();
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                  new Response(){
+                    Message = "Error interno en el servidor",
+                    Success = false
+                  }  
+                );
+            }
+        }
+
+
+
         [HttpPost]
         public IActionResult GuardarPelicula([FromBody] BodyPeliculaDto value)
         {
@@ -177,7 +237,7 @@ namespace TestCrud.Controllers
         }
 
         [HttpDelete]
-        public IActionResult BorrarPelicula([FromBody] int cod_pelicula)
+        public IActionResult BorrarPelicula([FromQuery] int cod_pelicula)
         {
             try
             {
@@ -298,6 +358,66 @@ namespace TestCrud.Controllers
                 );
             }
         }
+        
+        [HttpGet("recaudado")]
+        public IActionResult GetPeliculasRecaudacion()
+        {
+            try
+            {
+                var peliculas = _peliculaRepo.GetRecaudadoPorPelicula();
+
+                if(peliculas.Count() > 0)
+                    return Ok(
+                        new Response(){
+                            Data = peliculas,
+                            Message = "",
+                            Success = true      
+                        }
+                    );
+                else 
+                    return NoContent();
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                    new Response(){
+                            Data = null,
+                            Message = "",
+                            Success = false      
+                        }
+                );
+            }
+        }
+        [HttpGet("alquilada/devolver")]
+        public IActionResult GetPeliculasAlquiladaPorDevolver()
+        {
+            try
+            {
+                var peliculas = _peliculaRepo.GetPeliculaAlquiladaPorDevolver();
+
+                if(peliculas.Count() > 0)
+                    return Ok(
+                        new Response(){
+                            Data = peliculas,
+                            Message = "",
+                            Success = true      
+                        }
+                    );
+                else 
+                    return NoContent();
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                    new Response(){
+                            Data = null,
+                            Message = "",
+                            Success = false      
+                        }
+                );
+            }
+        }
+
 
     }
 }

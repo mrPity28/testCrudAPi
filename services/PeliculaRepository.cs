@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using TestCrud.models.db;
+using TestCrud.models.db.TestCrud;
 using TestCrud.models.db.TestCrud.StoreProcedure;
 
 namespace TestCrud.services
@@ -137,6 +138,31 @@ namespace TestCrud.services
             }
         }
 
+        public TPelicula GetPelicula(int cod_pelicula)
+        {
+            return _context.TPeliculas.Find(cod_pelicula);
+        }
+
+        public IEnumerable<SpPeliculasAlquiladas> GetPeliculaAlquiladaPorDevolver()
+        {
+            List<SpPeliculasAlquiladas> data = new List<SpPeliculasAlquiladas>();
+            try
+            {
+                data = _context.SpPeliculasAlquiladas
+                    .FromSqlRaw("EXEC [dbo].[SpPeliculasAlquiladas]").ToList();
+                return data;
+            }
+            catch(Exception ex)
+            {
+                return data;
+            }
+        }
+
+        public IEnumerable<TPelicula> GetPeliculas()
+        {
+            return _context.TPeliculas.ToList();
+        }
+
         public IEnumerable<SpObtenerPeliculasConStockVentaAlquiler> GetPeliculasConStockDeAlquiler()
         {
             List<SpObtenerPeliculasConStockVentaAlquiler> data = new List<SpObtenerPeliculasConStockVentaAlquiler>();
@@ -159,6 +185,21 @@ namespace TestCrud.services
             {
                 data = _context.SpObtenerPeliculasConStockVentaAlquilers
                             .FromSqlRaw("EXEC [dbo].[SpObtenerPeliculasConStockVenta]").ToList();
+                return data;
+            }
+            catch(Exception ex)
+            {
+                return data;
+            }
+        }
+
+        public IEnumerable<SpRecaudadoPorPelicula> GetRecaudadoPorPelicula()
+        {
+            List<SpRecaudadoPorPelicula> data = new List<SpRecaudadoPorPelicula>();
+            try
+            {
+                data = _context.SpRecaudadoPorPeliculas
+                            .FromSqlRaw("EXEC [dbo].[SpRecaudadoPorPelicula]").ToList();
                 return data;
             }
             catch(Exception ex)
@@ -218,7 +259,7 @@ namespace TestCrud.services
                 };
 
                 var data = _context.SpCrud
-                            .FromSqlRaw("EXEC [dbo].[SpModificarPelicula] @descripcion = @descripcion, @stock_alquiler = @stock_alquiler, @stock_venta = @stock_venta, @precio_alquiler = @precio_alquiler, @precio_venta = @precio_venta",parametros.ToArray()).ToList();
+                            .FromSqlRaw("EXEC [dbo].[SpModificarPelicula] @cod_pelicula=@cod_pelicula, @descripcion = @descripcion, @stock_alquiler = @stock_alquiler, @stock_venta = @stock_venta, @precio_alquiler = @precio_alquiler, @precio_venta = @precio_venta",parametros.ToArray()).ToList();
                 
                 if(data.Count > 0)
                     res = data[0];

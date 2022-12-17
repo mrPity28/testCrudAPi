@@ -31,6 +31,8 @@ public partial class TestCrudContext : DbContext
     // stores procedure 
     public virtual DbSet<SpObtenerPeliculasConStockVentaAlquiler> SpObtenerPeliculasConStockVentaAlquilers {get;set;}
     public virtual DbSet<SpCrud> SpCrud {get;set;}
+    public virtual DbSet<SpRecaudadoPorPelicula> SpRecaudadoPorPeliculas {get;set;}
+    public virtual DbSet<SpPeliculasAlquiladas> SpPeliculasAlquiladas {get;set;}
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -185,6 +187,8 @@ public partial class TestCrudContext : DbContext
 
         modelBuilder.Entity<SpObtenerPeliculasConStockVentaAlquiler>().HasNoKey();
         modelBuilder.Entity<SpCrud>().HasNoKey();
+        modelBuilder.Entity<SpRecaudadoPorPelicula>().HasNoKey();
+        modelBuilder.Entity<SpPeliculasAlquiladas>().HasNoKey();
         OnModelCreatingPartial(modelBuilder);
     }
 

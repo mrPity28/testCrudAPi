@@ -11,5 +11,6 @@ namespace TestCrud.services
     {
         SpCrud CrearUsuario(string usuario, string password, string nombre, string apellido, string nro_doc);
         TUser Login(string user, string password);
+        IEnumerable<TUser> GetUsuarios();
     }
 }

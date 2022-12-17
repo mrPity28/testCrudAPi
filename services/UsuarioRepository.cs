@@ -52,6 +52,11 @@ namespace TestCrud.services
             }
         }
 
+        public IEnumerable<TUser> GetUsuarios()
+        {
+            return _context.TUsers.ToList();
+        }
+
         public TUser Login(string user, string password)
         {
             try

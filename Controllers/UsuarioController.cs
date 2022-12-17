@@ -24,6 +24,31 @@ namespace TestCrud.Controllers
             _maper = mapper;
         }
 
+        [HttpGet]
+        public IActionResult GetUsuarios()
+        {
+            try
+            {
+                var user = _usuarioRepository.GetUsuarios();
+                if(user.Count() > 0)
+                    return Ok(
+                        new Response(){
+                            Data = _maper.Map<List<UsuarioDto>>(user)
+                        }
+                    );
+                else 
+                     return NoContent();
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                  new Response(){
+                    Message = "Error en el servidor",
+                    Success = false
+                  }  
+                );
+            }
+        }
         [HttpPost]
         public IActionResult CrearUsuario([FromBody] BodyCrearUsuarioDto value)
         {
@@ -48,7 +73,7 @@ namespace TestCrud.Controllers
             {
                 return BadRequest(
                   new Response(){
-                    Message = "no se pudo guardar la pelicula",
+                    Message = "Error en el servidor",
                     Success = false
                   }  
                 );
@@ -78,16 +103,14 @@ namespace TestCrud.Controllers
             }
             catch(Exception ex)
             {
-                return BadRequest(
+               return BadRequest(
                   new Response(){
-                    Message = "error al realizar login",
+                    Message = "Error en el servidor",
                     Success = false
                   }  
                 );
             }
         }
-
-
 
     }
 }
