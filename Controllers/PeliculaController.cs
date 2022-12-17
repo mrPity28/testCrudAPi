@@ -76,13 +76,106 @@ namespace TestCrud.Controllers
             {
                 return BadRequest(
                   new Response(){
-                    Message = "no se pudo guardar la pelicula",
+                    Message = "no se pudo modificar la pelicula",
                     Success = false
                   }  
                 );
             }
         }
         
+        [HttpPost("alquilar")]
+        public IActionResult AlquilarPelicula([FromBody] BodyAlquilarVenderPeliculaDto value)
+        {
+            try 
+            {
+                var res = _peliculaRepo.AlquilarPelicula(value.cod_pelicula,value.cod_usuario,value.precio);
+                
+                if(res.NroError == 0)
+                    return Ok(new Response(){
+                        Message = res.MessageError,
+                        Success = true
+                    });
+                else 
+                    return BadRequest(
+                        new Response(){
+                           Message = res.MessageError,
+                            Success = true
+                        }
+                    );
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                  new Response(){
+                    Message = "no se pudo alquilar la pelicula",
+                    Success = false
+                  }  
+                );
+            }
+        }
+
+        [HttpPost("vender")]
+        public IActionResult VenderPelicula([FromBody] BodyAlquilarVenderPeliculaDto value)
+        {
+            try 
+            {
+                var res = _peliculaRepo.VenderPelicula(value.cod_pelicula,value.cod_usuario,value.precio);
+                
+                if(res.NroError == 0)
+                    return Ok(new Response(){
+                        Message = res.MessageError,
+                        Success = true
+                    });
+                else 
+                    return BadRequest(
+                        new Response(){
+                           Message = res.MessageError,
+                            Success = true
+                        }
+                    );
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                  new Response(){
+                    Message = "no se pudo vender la pelicula",
+                    Success = false
+                  }  
+                );
+            }
+        }
+
+        [HttpPost("alquilar/devolver")]
+        public IActionResult DevolverPelicula([FromBody] BodyDevolverPeliculaDto value)
+        {
+            try 
+            {
+                var res = _peliculaRepo.DevolverPelicula(value.CodAlquilerPelicula);
+                
+                if(res.NroError == 0)
+                    return Ok(new Response(){
+                        Message = res.MessageError,
+                        Success = true
+                    });
+                else 
+                    return BadRequest(
+                        new Response(){
+                           Message = res.MessageError,
+                            Success = true
+                        }
+                    );
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(
+                  new Response(){
+                    Message = "no se pudo devolver la pelicula",
+                    Success = false
+                  }  
+                );
+            }
+        }
+
         [HttpDelete]
         public IActionResult BorrarPelicula([FromBody] int cod_pelicula)
         {

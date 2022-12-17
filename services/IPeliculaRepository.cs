@@ -13,5 +13,8 @@ namespace TestCrud.services
         SpCrud ModificarPelicula(int cod_pelicula, string descripcion, int stockAlquiler, int stockVenta, double precioAlquiler, double precioVenta);
         SpCrud BorrarPelicula(int cod_pelicula);
         SpCrud AsignarGeneroAPelicula(int codPelicula, int codGenero);
+        SpCrud AlquilarPelicula(int codPelicula, int codUsuario, double precio);
+        SpCrud VenderPelicula(int codPelicula, int codUsuario, double precio);
+        SpCrud DevolverPelicula(int codAlquilerPelicula);
     }
 }
